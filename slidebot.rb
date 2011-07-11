@@ -42,9 +42,9 @@ entries.reverse.each do |e|
 		@rubytter.update(content)
 	rescue => ever
 		File.open(LOG_ERROR, 'a') {|f| f.puts Time.now; f.puts ever; f.puts e.inspect}
-		break
 	end
 	latest_posted = e[:date]
+	break
 end
 #update log
 File.open(LOG_LATEST, 'w') {|f| f.puts latest_posted}
