@@ -24,6 +24,10 @@ class SlideShare
 		get('/get_slideshow', params)
 	end
 
+	def search_slideshows(params = {})
+		get('/search_slideshows', params)
+	end
+
 	def get(path, params = {})
 		param_str = '?' + to_param_str(params)
 		path = path + param_str unless param_str.empty?

@@ -36,7 +36,7 @@ entries.reverse.each do |e|
 	begin
 		slide = @slideshare.get_slideshow(:slideshow_url => e[:link], :detailed => 1).Slideshow
 	rescue => ever
-		File.open(LOG_ERROR, 'a') {|f| f.puts Time.now; f.puts ever; f.puts e.inspect}
+		File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
 		next
 	end
 
@@ -57,7 +57,7 @@ entries.reverse.each do |e|
 	begin
 		@rubytter.update(tweet)
 	rescue => ever
-		File.open(LOG_ERROR, 'a') {|f| f.puts Time.now; f.puts ever; f.puts e.inspect}
+		File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
 		exit
 	end
 
