@@ -1,35 +1,45 @@
 # coding: utf-8
 require File.expand_path('../boot', __FILE__)
 
-log_dir 'log/popular'
+log_dir = 'log/popular'
 Dir.mkdir(log_dir) unless File.directory?(log_dir)
-
-target = HASHTAG_LIST.sample.gsub(/\d/, '')
-log_file = "#{log_dir}/#{target}.log"
-FileUtils.touch(log_file) unless File.exist?(log_file)
-posted_ids = logs = IO.read(log_file).split("\n")
-page = posted_ids.size % 12 + 1
+log_error = "#{log_dir}/error.log"
 
 @slideshare = SlideShare.new(SLIDESHARE_API_KEY, SLIDESHARE_SECRET_KEY)
-params = {
-	:q => target,
-	:sort => 'relevance', #'mostviewed' is broken.
-	:lang => 'ja',
-	:detailed => 1,
-	:page => page,
-#	:items_per_page => 50, #default is 12, max is 50
-}
-result = @slideshare.search_slideshows(params)
-if result.Slideshows.Meta.TotalResults.to_i.zero?
-	File.open("#{log_dir}/error.log", 'a') {|f|
-		f.puts "\n" + Time.now.to_s
-		f.puts 'Result Nothing'
-		f.puts result.Slideshows.Meta.inspect
-	}
-	exit
-end
 
-slides = result.Slideshows.Slideshow
+begin
+	target = HASHTAG_LIST.sample.gsub(/\d/, '')
+	log_file = "#{log_dir}/#{target}.log"
+	FileUtils.touch(log_file) unless File.exist?(log_file)
+	posted_ids = logs = IO.read(log_file).split("\n")
+	page = posted_ids.size % 12 + 1
+
+	params = {
+		:q => target,
+		:sort => 'relevance', #'mostviewed' is broken.
+		:lang => 'ja',
+		:detailed => 1,
+		:page => page,
+		#:items_per_page => 50, #default is 12, max is 50
+	}
+	begin
+		result = @slideshare.search_slideshows(params)
+	rescue => ever
+		File.open(log_error, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts target}
+		next
+	end
+
+	if result.Slideshows.Meta.TotalResults.to_i.zero?
+		File.open(log_error, 'a') {|f|
+			f.puts "\n" + Time.now.to_s
+			f.puts 'Result Nothing'
+			f.puts result.Slideshows.Meta.inspect
+		}
+	else
+		slides = result.Slideshows.Slideshow
+	end
+end until !slides.nil?
+
 slides.each do |s|
 	next if posted_ids.include?(s.ID)
 
@@ -45,7 +55,7 @@ slides.each do |s|
 	begin
 		@rubytter.update(tweet)
 	rescue => ever
-		File.open("#{log_dir}/error.log", 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts s.inspect}
+		File.open(log_error, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts s.inspect}
 		exit
 	end
 
