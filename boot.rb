@@ -9,7 +9,6 @@ require './lib/hashtag'
 require File.expand_path('../config', __FILE__)
 
 Dir.mkdir('log') unless File.directory?('log')
-File.open(LOG_LATEST, 'w') {|f| f.puts '2011-01-01'} unless File.exist?(LOG_LATEST)
 
 @consumer = OAuth::Consumer.new(
 	CONSUMER_KEY,

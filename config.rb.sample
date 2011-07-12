@@ -1,5 +1,3 @@
-RSS_URL = ''
-
 SLIDESHARE_API_KEY = ''
 SLIDESHARE_SECRET_KEY = ''
 
@@ -11,7 +9,11 @@ CONSUMER_SECRET = ''
 ACCESS_TOKEN = ''
 ACCESS_SECRET = ''
 
-LOG_LATEST = 'log/latest.log'
+HATEB_EID_RSS = ''
+HATEB_HOT_RSS = ''
+
+LOG_EID = 'log/eid.log'
+LOG_HOT = 'log/hot.log'
 LOG_ERROR = 'log/error.log'
 
 HASHTAG_LIST = [

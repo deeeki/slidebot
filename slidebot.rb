@@ -1,13 +1,25 @@
 # coding: utf-8
 require File.expand_path('../boot', __FILE__)
 
-latest_posted = Time.parse(IO.read(LOG_LATEST))
+if (Time.now.hour % 12).zero?
+	mode = 'hot'
+	log_file = LOG_HOT
+	rss_url = HATEB_HOT_RSS
+else
+	mode = 'eid'
+	log_file = LOG_EID
+	rss_url = HATEB_EID_RSS
+end
+
 @slideshare = SlideShare.new(SLIDESHARE_API_KEY, SLIDESHARE_SECRET_KEY)
 @rubytter = OAuthRubytter.new(@access_token)
 @hashtag = Hashtag.new(HASHTAG_LIST)
 
+File.open(log_file, 'w') {|f| f.puts '2011-01-01'} unless File.exist?(log_file)
+last_posted = Time.parse(IO.read(log_file))
+
 #check hatena::bookmark entrylist
-rss = RSS::Parser.parse(RSS_URL)
+rss = RSS::Parser.parse(rss_url)
 entries = []
 rss.items.each do |i|
 	entries << {
@@ -18,7 +30,7 @@ rss.items.each do |i|
 end
 
 entries.reverse.each do |e|
-	next if e[:date] <= latest_posted
+	next if e[:date] <= last_posted
 
 	#get slide data
 	begin
@@ -28,23 +40,29 @@ entries.reverse.each do |e|
 		next
 	end
 
-	#create content
-	new = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
+	#create tweet
+	if mode == 'hot'
+		prefix = '*Hot!* '
+	else
+		prefix = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
+	end
 	url = Bitly.shorten(slide.URL, BITLY_LOGIN, BITLY_API_KEY).url
 	uploaded = Time.parse(slide.Created).strftime('%Y-%m-%d')
 	dl = slide.Download == '1' ? '[DL:OK]' : '[DL:NG]'
 	hashtag = @hashtag.detect_array(slide.Tags.Tag) unless slide.Tags.blank?
 	hashtag ||= @hashtag.detect(slide.Title)
-	content = "#{new}#{slide.Title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
+	tweet = "#{prefix}#{slide.Title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
 
-	#post twitter
+	#post tweet
 	begin
-		@rubytter.update(content)
+		@rubytter.update(tweet)
 	rescue => ever
 		File.open(LOG_ERROR, 'a') {|f| f.puts Time.now; f.puts ever; f.puts e.inspect}
+		exit
 	end
-	latest_posted = e[:date]
+
+	last_posted = e[:date]
 	break
 end
 #update log
-File.open(LOG_LATEST, 'w') {|f| f.puts latest_posted}
+File.open(log_file, 'w') {|f| f.puts last_posted}
