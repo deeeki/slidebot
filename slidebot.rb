@@ -51,13 +51,14 @@ entries.reverse.each do |e|
 	else
 		prefix = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
 	end
+	title = slide.Title
 	title = title[0, 45] + ' ...' if title.size > 49
 	url = Bitly.shorten(slide.URL, BITLY_LOGIN, BITLY_API_KEY).url
 	uploaded = Time.parse(slide.Created).strftime('%Y-%m-%d')
 	dl = slide.Download == '1' ? '[DL:OK]' : '[DL:NG]'
 	hashtag = @hashtag.detect_array(slide.Tags.Tag) unless slide.Tags.blank?
 	hashtag ||= @hashtag.detect(slide.Title)
-	tweet = "#{prefix}#{slide.Title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
+	tweet = "#{prefix}#{title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
 
 	#post tweet
 	begin

@@ -46,8 +46,8 @@ slides.each do |s|
 	next if posted_ids.include?(s.ID)
 
 	#create tweet
-	title = s.Title
 	prefix = (s.NumViews.to_i > 10000) ? '*Popular!* ' : ''
+	title = s.Title
 	title = title[0, 45] + ' ...' if title.size > 49
 	url = Bitly.shorten(s.URL, BITLY_LOGIN, BITLY_API_KEY).url
 	uploaded = Time.parse(s.Created).strftime('%Y-%m-%d')
