@@ -51,6 +51,7 @@ entries.reverse.each do |e|
 	else
 		prefix = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
 	end
+	title = title[0, 45] + ' ...' if title.size > 49
 	url = Bitly.shorten(slide.URL, BITLY_LOGIN, BITLY_API_KEY).url
 	uploaded = Time.parse(slide.Created).strftime('%Y-%m-%d')
 	dl = slide.Download == '1' ? '[DL:OK]' : '[DL:NG]'

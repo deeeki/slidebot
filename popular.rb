@@ -38,6 +38,7 @@ begin
 		}
 	else
 		slides = result.Slideshows.Slideshow
+		slides = [slides] unless slides.instance_of?(Array)
 	end
 end until !slides.nil?
 
@@ -45,7 +46,9 @@ slides.each do |s|
 	next if posted_ids.include?(s.ID)
 
 	#create tweet
-	prefix = '*Popular* '
+	title = s.Title
+	prefix = (s.NumViews.to_i > 10000) ? '*Popular!* ' : ''
+	title = title[0, 45] + ' ...' if title.size > 49
 	url = Bitly.shorten(s.URL, BITLY_LOGIN, BITLY_API_KEY).url
 	uploaded = Time.parse(s.Created).strftime('%Y-%m-%d')
 	dl = s.Download == '1' ? '[DL:OK]' : '[DL:NG]'
