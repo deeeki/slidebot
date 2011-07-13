@@ -6,6 +6,7 @@ Dir.mkdir(log_dir) unless File.directory?(log_dir)
 log_error = "#{log_dir}/error.log"
 
 @slideshare = SlideShare.new(SLIDESHARE_API_KEY, SLIDESHARE_SECRET_KEY)
+@rubytter = OAuthRubytter.new(@access_token)
 
 begin
 	target = HASHTAG_LIST.sample.gsub(/\d/, '')

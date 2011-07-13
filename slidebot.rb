@@ -20,6 +20,11 @@ last_posted = Time.parse(IO.read(log_file))
 
 #check hatena::bookmark entrylist
 rss = RSS::Parser.parse(rss_url)
+unless rss
+	File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect}
+	exit
+end
+
 entries = []
 rss.items.each do |i|
 	entries << {
