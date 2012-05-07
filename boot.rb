@@ -4,6 +4,7 @@ Bundler.require(:default) if defined?(Bundler)
 
 require 'time'
 require 'rss'
+require 'open-uri'
 require './lib/slideshare'
 require './lib/hashtag'
 require File.expand_path('../config', __FILE__)
