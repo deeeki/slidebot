@@ -8,13 +8,18 @@ log_error = "#{log_dir}/error.log"
 @rubytter = OAuthRubytter.new(@access_token)
 
 begin
-	results = @rubytter.search('slidesha.re')
-	results.each do |r|
-		next if r.text =~ /^RT\s/
-		user = @rubytter.user(r.user.screen_name)
-		@rubytter.follow(user.id) unless user.following
-	end
-rescue => ever
-	File.open(log_error, 'a') {|f| f.puts Time.now; f.puts ever; f.puts "\n"}
-	exit
+  myself = @rubytter.user('slidebot')
+  following = myself.friends_count.to_i
+  following_limit = (myself.followers_count.to_i * 1.1).floor
+
+  results = @rubytter.search('speakerdeck.com')
+  results.each do |r|
+    break if following > following_limit
+    next if r.text =~ /^RT\s/
+    user = @rubytter.user(r.user.screen_name)
+    @rubytter.follow(user.id) unless user.following
+    following += 1
+  end
+rescue => e
+  File.open(log_error, 'a'){|f| f.puts Time.now; f.puts e.inspect; f.puts }
 end
