@@ -16,19 +16,19 @@ log_error = @config['log']['error']
 @rubytter = OAuthRubytter.new(@access_token)
 @hashtag = Hashtag.new(HASHTAG_LIST)
 
-File.open(log_file, 'w') {|f| f.puts '2011-01-01'} unless File.exist?(log_file)
+File.open(log_file, 'w'){|f| f.puts '2011-01-01' } unless File.exist?(log_file)
 last_posted = Time.parse(IO.read(log_file))
 
 #check hatena::bookmark entrylist
-rss = RSS::Parser.parse(rss_url + '&of=40')
+rss = RSS::Parser.parse(rss_url)
 unless rss
-  File.open(log_error, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect}
+  File.open(log_error, 'a'){|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect }
   exit
 end
 
 entries = []
 rss.items.each do |i|
-  next unless i.link =~ /speakerdeck.com\/u\/.+\/p\/[\w\d-]+$/
+  next unless i.link =~ /speakerdeck.com\/(u\/)?[^\/]{2,}\/(p\/)?[^\/]+$/
   entries << {
     :title => i.title.sub(' // Speaker Deck', ''),
     :link => i.link,
@@ -42,18 +42,10 @@ entries.reverse.each do |e|
   #get slide data
   page = Nokogiri.HTML(open(e[:link]))
   presenter = page.at('.presenter > h2 > a').text.strip
-  category = begin
-               " [#{page.at('.category > a').text.strip}]"
-             rescue
-               ''
-             end
+  category = " [#{page.at('.category > a').text.strip}]" rescue ''
 
   #create tweet
-  if mode == 'hot'
-    prefix = '*Hot!* '
-  else
-    prefix = '*New!* '
-  end
+  prefix = (mode == 'hot')? '*Hot!* ' : '*New!* '
   title = e[:title]
   title = title[0, 80] + ' ...' if title.size > 84
   url = Bitly.shorten(e[:link], BITLY_LOGIN, BITLY_API_KEY).url
@@ -63,8 +55,8 @@ entries.reverse.each do |e|
   #post tweet
   begin
     @rubytter.update(tweet)
-  rescue => ever
-    File.open(log_error, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
+  rescue => e
+    File.open(log_error, 'a'){|f| f.puts "\n" + Time.now.to_s; f.puts e.inspect }
     exit
   end
 
@@ -72,4 +64,4 @@ entries.reverse.each do |e|
   break
 end
 #update log
-File.open(log_file, 'w') {|f| f.puts last_posted}
+File.open(log_file, 'w'){|f| f.puts last_posted }
