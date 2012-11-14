@@ -15,6 +15,7 @@ log_error = @config['log']['error']
 
 @rubytter = OAuthRubytter.new(@access_token)
 @hashtag = Hashtag.new(HASHTAG_LIST)
+@agent = Mechanize.new
 
 File.open(log_file, 'w'){|f| f.puts '2011-01-01' } unless File.exist?(log_file)
 last_posted = Time.parse(IO.read(log_file))
@@ -40,7 +41,7 @@ entries.reverse.each do |e|
   next if e[:date] <= last_posted
 
   #get slide data
-  page = Nokogiri.HTML(open(e[:link]))
+  page = @agent.get(e[:link])
   presenter = page.at('.presenter > h2 > a').text.strip
   category = " [#{page.at('.category > a').text.strip}]" rescue ''
 
