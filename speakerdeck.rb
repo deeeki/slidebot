@@ -47,10 +47,11 @@ entries.reverse.each do |e|
 
   #create tweet
   prefix = (mode == 'hot')? '*Hot!* ' : '*New!* '
-  title = e[:title]
-  title = title[0, 80] + ' ...' if title.size > 84
   url = Bitly.shorten(e[:link], BITLY_LOGIN, BITLY_API_KEY).url
   hashtag = @hashtag.detect(e[:title])
+  title_max_length = 140 - (prefix + url + presenter + category + hashtag.to_s).size - 8
+  title = e[:title]
+  title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length
   tweet = "#{prefix}#{title} #{url} (by #{presenter})#{category} #{hashtag}"
 
   #post tweet

@@ -2,13 +2,13 @@
 require File.expand_path('../boot', __FILE__)
 
 if (Time.now.hour % 12).zero?
-	mode = 'hot'
-	log_file = LOG_HOT
-	rss_url = HATEB_HOT_RSS
+  mode = 'hot'
+  log_file = LOG_HOT
+  rss_url = HATEB_HOT_RSS
 else
-	mode = 'eid'
-	log_file = LOG_EID
-	rss_url = HATEB_EID_RSS
+  mode = 'eid'
+  log_file = LOG_EID
+  rss_url = HATEB_EID_RSS
 end
 
 @slideshare = SlideShare.new(SLIDESHARE_API_KEY, SLIDESHARE_SECRET_KEY)
@@ -21,55 +21,56 @@ last_posted = Time.parse(IO.read(log_file))
 #check hatena::bookmark entrylist
 rss = RSS::Parser.parse(rss_url)
 unless rss
-	File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect}
-	exit
+  File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect}
+  exit
 end
 
 entries = []
 rss.items.each do |i|
-	entries << {
-		:title => i.title,
-		:link => i.link,
-		:date => i.date
-	}
+  entries << {
+    :title => i.title,
+    :link => i.link,
+    :date => i.date
+  }
 end
 
 entries.reverse.each do |e|
-	next if e[:date] <= last_posted
+  next if e[:date] <= last_posted
 
-	#get slide data
-	begin
-		slide = @slideshare.get_slideshow(:slideshow_url => e[:link], :detailed => 1).Slideshow
-	rescue => ever
-		File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
-		next
-	end
+  #get slide data
+  begin
+    slide = @slideshare.get_slideshow(:slideshow_url => e[:link], :detailed => 1).Slideshow
+  rescue => ever
+    File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
+    next
+  end
 
-	#create tweet
-	if mode == 'hot'
-		prefix = '*Hot!* '
-	else
-		prefix = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
-	end
-	title = slide.Title
-	title = title[0, 45] + ' ...' if title.size > 49
-	url = Bitly.shorten(slide.URL, BITLY_LOGIN, BITLY_API_KEY).url
-	uploaded = Time.parse(slide.Created).strftime('%Y-%m-%d')
-	dl = slide.Download == '1' ? '[DL:OK]' : '[DL:NG]'
-	hashtag = @hashtag.detect_array(slide.Tags.Tag) unless slide.Tags.blank?
-	hashtag ||= @hashtag.detect(slide.Title)
-	tweet = "#{prefix}#{title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
+  #create tweet
+  if mode == 'hot'
+    prefix = '*Hot!* '
+  else
+    prefix = (Time.parse(slide.Created) > (Time.now - 604800)) ? '*New!* ' : ''
+  end
+  url = Bitly.shorten(slide.URL, BITLY_LOGIN, BITLY_API_KEY).url
+  uploaded = Time.parse(slide.Created).strftime('%Y-%m-%d')
+  dl = slide.Download == '1' ? '[DL:OK]' : '[DL:NG]'
+  hashtag = @hashtag.detect_array(slide.Tags.Tag) unless slide.Tags.blank?
+  hashtag ||= @hashtag.detect(slide.Title)
+  title_max_length = 140 - (prefix + url + slide.Username + uploaded + slide.Language + dl + hashtag.to_s).size - 12
+  title = slide.Title
+  title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length
+  tweet = "#{prefix}#{title} #{url} (by #{slide.Username} #{uploaded}) [#{slide.Language}]#{dl} #{hashtag}"
 
-	#post tweet
-	begin
-		@rubytter.update(tweet)
-	rescue => ever
-		File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
-		exit
-	end
+  #post tweet
+  begin
+    #	@rubytter.update(tweet)
+  rescue => ever
+    File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
+    exit
+  end
 
-	last_posted = e[:date]
-	break
+  last_posted = e[:date]
+  break
 end
 #update log
 File.open(log_file, 'w') {|f| f.puts last_posted}
