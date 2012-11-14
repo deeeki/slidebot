@@ -17,6 +17,7 @@ begin
     break if following > following_limit
     next if r.text =~ /^RT\s/
     user = @rubytter.user(r.user.screen_name)
+    next unless user.lang == 'ja'
     @rubytter.follow(user.id) unless user.following
     following += 1
   end
