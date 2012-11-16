@@ -27,6 +27,7 @@ end
 
 entries = []
 rss.items.each do |i|
+  next if i.link.include?('?')
   entries << {
     :title => i.title,
     :link => i.link,
