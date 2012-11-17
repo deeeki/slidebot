@@ -64,7 +64,7 @@ entries.reverse.each do |e|
 
   #post tweet
   begin
-    #	@rubytter.update(tweet)
+    @rubytter.update(tweet)
   rescue => ever
     File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
     exit

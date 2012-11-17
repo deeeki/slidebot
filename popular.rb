@@ -56,8 +56,6 @@ slides.each do |s|
   title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length
   tweet = "#{prefix}#{s.Title} #{url} (by #{s.Username} #{uploaded}) [#{s.Language}]#{dl} #{hashtag}"
 
-  p tweet
-  exit
   #post tweet
   begin
     @rubytter.update(tweet)
