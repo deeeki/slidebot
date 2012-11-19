@@ -21,8 +21,8 @@ last_posted = Time.parse(IO.read(log_file))
 #check hatena::bookmark entrylist
 rss = RSS::Parser.parse(rss_url)
 unless rss
-  File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect}
-  exit
+  File.open(LOG_ERROR, 'a'){|f| f.puts "#{Time.now}\nRSS parse error\n#{rss.inspect}\n\n" }
+  raise 'RSS parse error'
 end
 
 entries = []
@@ -41,8 +41,9 @@ entries.reverse.each do |e|
   #get slide data
   begin
     slide = @slideshare.get_slideshow(:slideshow_url => e[:link], :detailed => 1).Slideshow
-  rescue => ever
-    File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
+  rescue => evar
+    File.open(LOG_ERROR, 'a'){|f| f.puts "#{Time.now}\n#{evar.inspect}\n#{e.inspect}\n\n" }
+    exit if evar.message == 'Account Exceeded Daily Limit'
     next
   end
 
@@ -65,9 +66,9 @@ entries.reverse.each do |e|
   #post tweet
   begin
     @rubytter.update(tweet)
-  rescue => ever
-    File.open(LOG_ERROR, 'a') {|f| f.puts "\n" + Time.now.to_s; f.puts ever; f.puts e.inspect}
-    exit
+  rescue => evar
+    File.open(LOG_ERROR, 'a'){|f| f.puts "#{Time.now}\n#{evar.inspect}\n#{e.inspect}\n\n" }
+    raise evar
   end
 
   last_posted = e[:date]

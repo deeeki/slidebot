@@ -23,8 +23,8 @@ last_posted = Time.parse(IO.read(log_file))
 #check hatena::bookmark entrylist
 rss = RSS::Parser.parse(rss_url)
 unless rss
-  File.open(log_error, 'a'){|f| f.puts "\n" + Time.now.to_s; f.puts 'RSS parse error'; f.puts rss.inspect }
-  exit
+  File.open(log_error, 'a'){|f| f.puts "#{Time.now}\nRSS parse error\n#{rss.inspect}\n\n" }
+  raise 'RSS parse error'
 end
 
 entries = []
@@ -59,9 +59,9 @@ entries.reverse.each do |e|
   #post tweet
   begin
     @rubytter.update(tweet)
-  rescue => e
-    File.open(log_error, 'a'){|f| f.puts "\n" + Time.now.to_s; f.puts e.inspect }
-    exit
+  rescue => evar
+    File.open(log_error, 'a'){|f| f.puts "#{Time.now}\n#{evar.inspect}\n#{e.inspect}\n\n" }
+    raise evar
   end
 
   last_posted = e[:date]
