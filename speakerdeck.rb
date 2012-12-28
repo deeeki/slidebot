@@ -30,7 +30,7 @@ end
 entries = []
 rss.items.each do |i|
   next unless i.link =~ /speakerdeck.com\/(u\/)?[^\/]{2,}\/(p\/)?[^\/]+$/
-  next if i.link =~ /speakerdeck.com\/embed\//
+  next if i.link =~ /speakerdeck.com\/(embed|player)\//
   next if i.link.include?('?')
   entries << {
     :title => i.title.sub(' // Speaker Deck', ''),
