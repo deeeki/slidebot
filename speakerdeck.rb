@@ -44,17 +44,17 @@ entries.reverse.each do |e|
 
   #get slide data
   page = @agent.get(e[:link])
-  presenter = page.at('.presenter > h2 > a').text.strip
+  presenter = " (by #{page.at('.presenter > h2 > a').text.strip})" rescue ''
   category = " [#{page.at('.category > a').text.strip}]" rescue ''
 
   #create tweet
   prefix = (mode == 'hot')? '*Hot!* ' : '*New!* '
   url = Bitly.shorten(e[:link], BITLY_LOGIN, BITLY_API_KEY).url
   hashtag = @hashtag.detect(e[:title])
-  title_max_length = 140 - (prefix + url + presenter + category + hashtag.to_s).size - 8
+  title_max_length = 140 - (prefix + url + presenter + category + hashtag.to_s).size - 2
   title = e[:title]
   title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length
-  tweet = "#{prefix}#{title} #{url} (by #{presenter})#{category} #{hashtag}"
+  tweet = "#{prefix}#{title} #{url}#{presenter}#{category} #{hashtag}"
 
   #post tweet
   begin
