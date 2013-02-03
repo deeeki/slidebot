@@ -1,7 +1,6 @@
 source 'http://rubygems.org'
 
 gem 'rubytter'
-gem 'ruby-bitly'
-gem 'activesupport'
-gem 'i18n'
 gem 'mechanize'
+gem 'slideshare', github: 'itzki/slideshare'
+gem 'dotenv'
