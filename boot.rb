@@ -1,24 +1,24 @@
-#require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default) if defined?(Bundler)
 
-require 'time'
-require 'rss'
-require 'open-uri'
-require './lib/slideshare'
-require './lib/hashtag'
-require File.expand_path('../config', __FILE__)
+Dotenv.load
 
-Dir.mkdir('log') unless File.directory?('log')
+$:.unshift(File.dirname(__FILE__) << '/lib')
+require 'slidebot'
+require 'hashtag'
+
+Hashtag.file = File.expand_path('../config/hashtag.yml', __FILE__)
 
 @consumer = OAuth::Consumer.new(
-	CONSUMER_KEY,
-	CONSUMER_SECRET,
-	{:site => 'http://api.twitter.com'}
+  ENV['TWITTER_CONSUMER_KEY'],
+  ENV['TWITTER_CONSUMER_SECRET'],
+  {:site => 'http://api.twitter.com'}
 )
 
 @access_token = OAuth::AccessToken.new(
-	@consumer,
-	ACCESS_TOKEN,
-	ACCESS_SECRET
+  @consumer,
+  ENV['TWITTER_ACCESS_TOKEN'],
+  ENV['TWITTER_ACCESS_SECRET'],
 )
+
+Dir.mkdir('log') unless File.directory?('log')

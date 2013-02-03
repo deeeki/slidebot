@@ -14,7 +14,6 @@ end
 log_error = @config['log']['error']
 
 @rubytter = OAuthRubytter.new(@access_token)
-@hashtag = Hashtag.new(HASHTAG_LIST)
 @agent = Mechanize.new
 
 File.open(log_file, 'w'){|f| f.puts '2011-01-01' } unless File.exist?(log_file)
@@ -49,8 +48,8 @@ entries.reverse.each do |e|
 
   #create tweet
   prefix = (mode == 'hot')? '*Hot!* ' : '*New!* '
-  url = Bitly.shorten(e[:link], BITLY_LOGIN, BITLY_API_KEY).url
-  hashtag = @hashtag.detect(e[:title])
+  url = e[:link]
+  hashtag = Hashtag.detect(e[:title])
   title_max_length = 140 - (prefix + url + presenter + category + hashtag.to_s).size - 2
   title = e[:title]
   title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length

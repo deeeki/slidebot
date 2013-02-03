@@ -1,4 +1,4 @@
 .bundle
 log/*
-config.rb
+.env
 config/*.yml
