@@ -6,8 +6,7 @@ Dotenv.load
 $:.unshift(File.dirname(__FILE__) << '/lib')
 require 'slidebot'
 require 'hashtag'
-
-Hashtag.file = File.expand_path('../config/hashtag.yml', __FILE__)
+require 'textfile'
 
 @consumer = OAuth::Consumer.new(
   ENV['TWITTER_CONSUMER_KEY'],
@@ -22,3 +21,6 @@ Hashtag.file = File.expand_path('../config/hashtag.yml', __FILE__)
 )
 
 Dir.mkdir('log') unless File.directory?('log')
+Textfile.basedir = File.expand_path('../log', __FILE__)
+
+Hashtag.file = File.expand_path('../config/hashtag.yml', __FILE__)
