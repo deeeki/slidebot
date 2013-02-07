@@ -10,8 +10,8 @@ module Slidebot
       HATEB_FEED_URL = 'http://b.hatena.ne.jp/entrylist?sort=hot&url=http%3A%2F%2Fwww.slideshare.net%2F&mode=rss'
       attr_reader :last_posted
 
-      def eid
-        Slidebot.log = Textfile.new('eid.log')
+      def new
+        Slidebot.log = Textfile.new('new.log')
         @last_posted = Time.parse(Slidebot.log.read)
         @threshold = 1
         specify_next
@@ -78,10 +78,10 @@ module Slidebot
 
     module Tweetable
       def to_status prefix = nil
-        if prefix
-          prefix = "*#{prefix.to_s.capitalize}!*"
-        else
+        if prefix == :new
           prefix = (Time.parse(created) > (Time.now - 604800)) ? '*New!* ' : ''
+        elsif prefix
+          prefix = "*#{prefix.to_s.capitalize}!* "
         end
         uploaded = Time.parse(created).strftime('%Y-%m-%d')
         dl = download == '1' ? '[DL:OK]' : '[DL:NG]'

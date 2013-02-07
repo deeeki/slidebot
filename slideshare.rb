@@ -1,6 +1,6 @@
 require File.expand_path('../boot', __FILE__)
 
-['log/eid.log', 'log/hot.log'].each do |log|
+['log/new.log', 'log/hot.log'].each do |log|
   IO.write(log, '2013-01-01') unless File.exist?(log)
 end
 
@@ -13,7 +13,7 @@ when 0, 12
 when 18
   mode = :popular
 else
-  mode = :eid
+  mode = :new
 end
 
 slide = Slidebot::Slideshare.__send__(mode)
@@ -23,7 +23,7 @@ slide.extend(Slidebot::Slideshare::Tweetable)
 
 begin
   @rubytter = OAuthRubytter.new(@access_token)
-  @rubytter.update(slide.to_status)
+  @rubytter.update(slide.to_status(mode))
 rescue => e
   Slidebot.error_log.append(Time.now, e.inspect, slide.inspect, '')
 end
