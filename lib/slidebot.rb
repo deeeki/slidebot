@@ -33,6 +33,7 @@ module Slidebot
           slides = search({ q: target, page: posted_ids.size % 12 + 1 })
           break unless slides.empty?
         end
+        return nil unless slides
         slides.reject{|s| posted_ids.include?(s.id) }.first
       end
 
@@ -72,7 +73,7 @@ module Slidebot
         else
           slides << result.slideshows.slideshow
         end
-        slides.flatten
+        slides.flatten.compact
       end
     end
 
