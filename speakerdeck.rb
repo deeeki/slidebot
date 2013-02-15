@@ -1,70 +1,25 @@
-# coding: utf-8
 require File.expand_path('../boot', __FILE__)
 
-@config ||= YAML.load_file './config/speakerdeck.yml'
-if (Time.now.hour % 12).zero?
-  mode = 'hot'
-  log_file = @config['log']['hot']
-  rss_url = @config['hateb_rss']['hot']
+['log/sd_new.log', 'log/sd_hot.log'].each do |log|
+  IO.write(log, '2013-01-01') unless File.exist?(log)
+end
+
+Slidebot.error_log = Textfile.new('error.log')
+case Time.now.hour
+when 0, 12
+  mode = :hot
 else
-  mode = 'eid'
-  log_file = @config['log']['eid']
-  rss_url = @config['hateb_rss']['eid']
-end
-log_error = @config['log']['error']
-
-@rubytter = OAuthRubytter.new(@access_token)
-@agent = Mechanize.new
-
-File.open(log_file, 'w'){|f| f.puts '2011-01-01' } unless File.exist?(log_file)
-last_posted = Time.parse(IO.read(log_file))
-
-#check hatena::bookmark entrylist
-rss = RSS::Parser.parse(rss_url)
-unless rss
-  File.open(log_error, 'a'){|f| f.puts "#{Time.now}\nRSS parse error\n#{rss.inspect}\n\n" }
-  raise 'RSS parse error'
+  mode = :new
 end
 
-entries = []
-rss.items.each do |i|
-  next unless i.link =~ /speakerdeck.com\/(u\/)?[^\/]{2,}\/(p\/)?[^\/]+$/
-  next if i.link =~ /speakerdeck.com\/(embed|player)\//
-  next if i.link.include?('?')
-  entries << {
-    :title => i.title.sub(' // Speaker Deck', ''),
-    :link => i.link,
-    :date => i.date
-  }
+slide = Slidebot::Speakerdeck.__send__(mode)
+exit unless slide
+
+begin
+  @rubytter = OAuthRubytter.new(@access_token)
+  @rubytter.update(slide.to_status(mode))
+rescue => e
+  Slidebot.error_log.append(Time.now, e.inspect, slide.inspect, '')
 end
 
-entries.reverse.each do |e|
-  next if e[:date] <= last_posted
-
-  #get slide data
-  page = @agent.get(e[:link])
-  presenter = " (by #{page.at('.presenter > h2 > a').text.strip})" rescue ''
-  category = " [#{page.at('.category > a').text.strip}]" rescue ''
-
-  #create tweet
-  prefix = (mode == 'hot')? '*Hot!* ' : '*New!* '
-  url = e[:link]
-  hashtag = Hashtag.detect(e[:title])
-  title_max_length = 140 - (prefix + url + presenter + category + hashtag.to_s).size - 2
-  title = e[:title]
-  title = title[0, title_max_length - 4] + ' ...' if title.size > title_max_length
-  tweet = "#{prefix}#{title} #{url}#{presenter}#{category} #{hashtag}"
-
-  #post tweet
-  begin
-    @rubytter.update(tweet)
-  rescue => evar
-    File.open(log_error, 'a'){|f| f.puts "#{Time.now}\n#{evar.inspect}\n#{e.inspect}\n\n" }
-    raise evar
-  end
-
-  last_posted = e[:date]
-  break
-end
-#update log
-File.open(log_file, 'w'){|f| f.puts last_posted }
+Slidebot.log.write(Slidebot::Speakerdeck.last_posted)

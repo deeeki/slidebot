@@ -1,4 +1,5 @@
 require 'rss'
+require 'slidebot/slideshare/tweetable'
 
 module Slidebot
   module Slideshare

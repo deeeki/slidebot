@@ -1,5 +1,5 @@
 require 'slidebot/slideshare'
-require 'slidebot/slideshare/tweetable'
+require 'slidebot/speakerdeck'
 
 module Slidebot
   class << self

@@ -1,8 +1,0 @@
-hateb_rss:
-  eid: ''
-  hot: ''
-
-log:
-  eid: 'log/sd_eid.log'
-  hot: 'log/sd_hot.log'
-  error: 'log/sd_error.log'
