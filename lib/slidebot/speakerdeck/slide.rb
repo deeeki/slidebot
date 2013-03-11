@@ -14,18 +14,32 @@ module Slidebot
       end
 
       def title
-        @title ||= html.title.sub(' // Speaker Deck', '')
+        @title ||= html.at('#talk-details h1').text.strip rescue nil
+      end
+
+      def presenter
+        @presenter ||= html.at('#talk-details h2 a').text.strip rescue nil
+      end
+
+      def published
+        @published ||= Date.parse(html.at('#talk-details mark:first-child').text.strip) rescue nil
+      end
+
+      def category
+        @category ||= html.at('#talk-details mark:last-child').text.strip rescue nil
       end
 
       def to_status prefix = nil
         prefix = prefix ? "*#{prefix.to_s.capitalize}!* " : ''
-        presenter = " (by #{html.at('.presenter > h2 > a').text.strip})" rescue ''
-        category = " [#{html.at('.category > a').text.strip}]" rescue ''
+        info = ''
+        info = "by #{presenter} " if presenter
+        info = (published) ? " (#{info}#{published.strftime('%Y-%m-%d')})" : " (#{info})"
+        info = "#{info} [#{category}]" if category
         hashtag = ::Hashtag.detect(title)
         # https url is counted as 23 on Twitter
-        max_len = 140 - (prefix + presenter + category + hashtag.to_s).size - 2 - 23
+        max_len = 140 - (prefix + info + hashtag.to_s).size - 2 - 23
         disp_title = title.size > max_len ? "#{htitle[0, title_max_length - 4]} ..."  : title
-        "#{prefix}#{disp_title} #{url}#{presenter}#{category} #{hashtag}"
+        "#{prefix}#{disp_title} #{url}#{info} #{hashtag}"
       end
     end
   end
