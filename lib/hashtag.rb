@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Hashtag
   class << self
     attr_writer :file
