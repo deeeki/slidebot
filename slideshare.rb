@@ -22,8 +22,7 @@ exit unless slide
 slide.extend(Slidebot::Slideshare::Tweetable)
 
 begin
-  @rubytter = OAuthRubytter.new(@access_token)
-  @rubytter.update(slide.to_status(mode))
+  Twitter.update(slide.to_status(mode))
 rescue => e
   Slidebot.error_log.append(Time.now, e.inspect, slide.inspect, '')
 end

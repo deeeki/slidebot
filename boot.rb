@@ -1,5 +1,5 @@
 require 'bundler/setup'
-Bundler.require(:default) if defined?(Bundler)
+Bundler.require
 
 Dotenv.load
 
@@ -8,17 +8,12 @@ require 'slidebot'
 require 'hashtag'
 require 'textfile'
 
-@consumer = OAuth::Consumer.new(
-  ENV['TWITTER_CONSUMER_KEY'],
-  ENV['TWITTER_CONSUMER_SECRET'],
-  {:site => 'http://api.twitter.com'}
-)
-
-@access_token = OAuth::AccessToken.new(
-  @consumer,
-  ENV['TWITTER_ACCESS_TOKEN'],
-  ENV['TWITTER_ACCESS_SECRET'],
-)
+Twitter.configure do |config|
+  config.consumer_key = ENV['TWITTER_CONSUMER_KEY']
+  config.consumer_secret = ENV['TWITTER_CONSUMER_SECRET']
+  config.oauth_token = ENV['TWITTER_ACCESS_TOKEN']
+  config.oauth_token_secret = ENV['TWITTER_ACCESS_SECRET']
+end
 
 Dir.mkdir('log') unless File.directory?('log')
 Textfile.basedir = File.expand_path('../log', __FILE__)
