@@ -5,20 +5,18 @@ log_dir = 'log/following'
 Dir.mkdir(log_dir) unless File.directory?(log_dir)
 log_error = "#{log_dir}/error.log"
 
-@rubytter = OAuthRubytter.new(@access_token)
-
 begin
-  myself = @rubytter.user('slidebot')
+  myself = Twitter.user('slidebot')
   following = myself.friends_count.to_i
   following_limit = (myself.followers_count.to_i * 1.1).floor
 
-  results = @rubytter.search('speakerdeck.com')
-  results.each do |r|
+  results = Twitter.search('speakerdeck.com')
+  results.statuses.each do |s|
     break if following > following_limit
     next if r.text =~ /^RT\s/
-    user = @rubytter.user(r.user.screen_name)
+    user = Twitter.user(s.user.screen_name)
     next unless user.lang == 'ja'
-    @rubytter.follow(user.id) unless user.following
+    Twitter.follow(user.id) unless user.following
     following += 1
   end
 rescue => e
