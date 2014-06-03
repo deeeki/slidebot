@@ -13,7 +13,7 @@ begin
   results = Twitter.search('speakerdeck.com')
   results.statuses.each do |s|
     break if following > following_limit
-    next if r.text =~ /^RT\s/
+    next if s.text =~ /^RT\s/
     user = Twitter.user(s.user.screen_name)
     next unless user.lang == 'ja'
     Twitter.follow(user.id) unless user.following
