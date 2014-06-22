@@ -6,7 +6,7 @@ module Slidebot
     AGENT = Mechanize.new{|a| a.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE }
 
     class << self
-      HATEB_FEED_URL = 'http://b.hatena.ne.jp/entrylist?sort=hot&threshold=10&url=http%3A%2F%2Fspeakerdeck.com%2F&mode=rss'
+      HATEB_FEED_URL = 'http://b.hatena.ne.jp/entrylist?sort=hot&url=http%3A%2F%2Fspeakerdeck.com%2F&mode=rss'
       attr_reader :last_posted
 
       def new
