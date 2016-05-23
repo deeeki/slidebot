@@ -41,7 +41,8 @@ module Slidebot
 
       def parse_hateb_feed
         url = "#{HATEB_FEED_URL}&threshold=#{@threshold}"
-        feed = RSS::Parser.parse(url)
+        body = open(url, 'User-Agent' => Mechanize::AGENT_ALIASES['Mac Safari'])
+        feed = RSS::Parser.parse(body)
         feed.items.reject{|i|
           i.link.include?('?') || i.link =~ /speakerdeck.com\/(embed|player)\// ||
             !(i.link =~ /speakerdeck.com\/(u\/)?[^\/]{2,}\/(p\/)?[^\/]+$/)

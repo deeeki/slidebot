@@ -53,7 +53,8 @@ module Slidebot
 
       def parse_hateb_feed
         url = "#{HATEB_FEED_URL}&threshold=#{@threshold}"
-        feed = RSS::Parser.parse(url)
+        body = open(url, 'User-Agent' => Mechanize::AGENT_ALIASES['Mac Safari'])
+        feed = RSS::Parser.parse(body)
         feed.items.reject{|i| i.link.include?('?') }.map{|i| { title: i.title, link: i.link, date: i.date } }
       end
 
